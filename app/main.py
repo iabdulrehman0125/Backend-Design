@@ -11,8 +11,8 @@ app = FastAPI(title="University AI Portal API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # dev — tighten later
-    allow_credentials=False,      # MUST be False when using "*"
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
@@ -25,7 +25,6 @@ app.include_router(auth.router)
 def health():
     return {"status": "ok", "service": "UniAgent API"}
 
-# Explicit OPTIONS handler — belt + suspenders for CORS preflight
 @app.options("/{full_path:path}")
 async def preflight(full_path: str):
     return JSONResponse(
