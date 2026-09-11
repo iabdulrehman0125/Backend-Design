@@ -1,0 +1,120 @@
+# =========================================================
+# Python
+# =========================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# =========================================================
+# Virtual Environments
+# =========================================================
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+.python-version
+
+# =========================================================
+# Environment Variables (CRITICAL — Supabase creds!)
+# =========================================================
+.env
+.env.*
+!.env.example
+*.env
+!.env.example
+
+# =========================================================
+# FastAPI / Uvicorn
+# =========================================================
+*.log
+logs/
+uvicorn.log
+
+# =========================================================
+# Database Files (local dev only)
+# =========================================================
+*.db
+*.sqlite
+*.sqlite3
+university.db
+instance/
+
+# =========================================================
+# Alembic (keep migrations, ignore runtime)
+# =========================================================
+# Do NOT ignore alembic/versions/*.py  ← migrations go in git
+alembic/*.pyc
+
+# =========================================================
+# Testing & Coverage
+# =========================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+.cache
+
+# =========================================================
+# Type Checking / Linting caches
+# =========================================================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pytype/
+
+# =========================================================
+# IDE / Editor
+# =========================================================
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# =========================================================
+# OS
+# =========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================================================
+# Secrets & Keys
+# =========================================================
+*.pem
+*.key
+*.crt
+secrets/
+secrets.json
+service-account*.json
