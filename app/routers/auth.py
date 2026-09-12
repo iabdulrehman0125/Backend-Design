@@ -9,8 +9,6 @@ from app.security import verify_password, create_access_token
 from app.deps import get_current_user
 from datetime import datetime, timedelta
 
-n
-
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
