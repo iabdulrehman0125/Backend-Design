@@ -54,3 +54,16 @@ def chat_history(
         {"role": l.role, "message": l.message, "created_at": l.created_at.isoformat()}
         for l in reversed(logs)
     ]
+
+@router.get("/debug")
+def chat_debug():
+    """Temporary: verify AI config. DELETE before production."""
+    import os
+    key = os.environ.get("XAI_API_KEY", "")
+    return {
+        "key_set": bool(key),
+        "key_prefix": key[:8] if key else None,   # shows first 8 chars only
+        "key_length": len(key),
+        "looks_like_groq": key.startswith("gsk_"),
+        "looks_like_xai": key.startswith("xai-"),
+    }
