@@ -36,6 +36,24 @@ ROLE_TOOL_NAMES = {
     }
     for role, tools in ROLE_TOOLS.items()
 }
+TOOL_EXECUTORS = {
+    "admin": {
+        "create_student": lambda db, user, args: exec_create_student(db, args),
+        "create_teacher": lambda db, user, args: exec_create_teacher(db, args),
+        "add_course": lambda db, user, args: exec_add_course(db, args),
+        "list_users": lambda db, user, args: exec_list_users(db, args),
+        "delete_user": lambda db, user, args: exec_delete_user(db, args),
+    },
+    "teacher": {
+        "get_my_courses": lambda db, user, args: exec_get_my_courses_teacher(db, user),
+        "get_course_students": lambda db, user, args: exec_get_course_students(db, user, args),
+    },
+    "student": {
+        "get_my_attendance": lambda db, user, args: exec_get_my_attendance(db, user),
+        "get_my_timetable": lambda db, user, args: exec_get_my_timetable(db, user),
+        "get_my_courses": lambda db, user, args: exec_get_my_courses_student(db, user),
+    },
+}
 # Role → system prompt
 SYSTEM_PROMPTS = {
       "admin": (
@@ -130,86 +148,30 @@ def run_agent(db: Session, current_user: User, user_message: str) -> str:
 
 
 def _execute_tool(db: Session, current_user: User, name: str, args: dict) -> dict:
-    """Dispatch a tool call only if the current user's role allows it."""
+    """Dispatch a tool call only if the user's role allows it."""
 
     role = current_user.role
 
-    # Security check: reject unknown roles.
     if role not in ROLE_TOOL_NAMES:
         return {"error": "Your account has an invalid role."}
 
-    # Security check: reject tools that are not allowed for this role.
     if name not in ROLE_TOOL_NAMES[role]:
         return {
             "error": f"Tool '{name}' is not allowed for the {role} role."
         }
 
+    executor = TOOL_EXECUTORS.get(role, {}).get(name)
+
+    if executor is None:
+        return {
+            "error": f"Tool '{name}' is not configured for the {role} role."
+        }
+
     try:
-        # ADMIN
-        if role == "admin":
-            if name == "create_student":
-                return exec_create_student(db, args)
-
-            if name == "create_teacher":
-                return exec_create_teacher(db, args)
-
-            if name == "add_course":
-                return exec_add_course(db, args)
-
-            if name == "list_users":
-                return exec_list_users(db, args)
-
-            if name == "delete_user":
-                return exec_delete_user(db, args)
-
-        # TEACHER
-        elif role == "teacher":
-            if name == "get_my_courses":
-                return exec_get_my_courses_teacher(db, current_user)
-
-            if name == "get_course_students":
-                return exec_get_course_students(
-                    db, current_user, args
-                )
-
-        # STUDENT
-        elif role == "student":
-            if name == "get_my_attendance":
-                return exec_get_my_attendance(db, current_user)
-
-            if name == "get_my_timetable":
-                return exec_get_my_timetable(db, current_user)
-
-            if name == "get_my_courses":
-                return exec_get_my_courses_student(db, current_user)
-
-        return {"error": f"Tool '{name}' could not be executed."}
+        return executor(db, current_user, args)
 
     except Exception:
         db.rollback()
         return {
             "error": "Something went wrong while processing this request."
         }
-    """Dispatch a tool call to the correct executor."""
-    role = current_user.role
-    try:
-        # ADMIN
-        if role == "admin":
-            if name == "create_student": return exec_create_student(db, args)
-            if name == "create_teacher": return exec_create_teacher(db, args)
-            if name == "add_course":     return exec_add_course(db, args)
-
-        # TEACHER
-        if role == "teacher":
-            if name == "get_my_courses":       return exec_get_my_courses_teacher(db, current_user)
-            if name == "get_course_students":  return exec_get_course_students(db, current_user, args)
-
-        # STUDENT
-        if role == "student":
-            if name == "get_my_attendance": return exec_get_my_attendance(db, current_user)
-            if name == "get_my_timetable":  return exec_get_my_timetable(db, current_user)
-            if name == "get_my_courses":    return exec_get_my_courses_student(db, current_user)
-
-        return {"error": f"Unknown tool: {name}"}
-    except Exception as e:
-        return {"error": str(e)}
