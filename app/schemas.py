@@ -118,3 +118,25 @@ class UserDetail(UserOut):
 class AssignTeacherRequest(BaseModel):
     teacher_id: int
     course_id: int
+    
+# ============ UPDATE SCHEMAS ============
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    is_active: Optional[bool] = None
+    password: Optional[str] = Field(None, min_length=6)
+
+
+class StudentUpdate(UserUpdate):
+    roll_number: Optional[str] = None
+    department_id: Optional[int] = None
+    batch_year: Optional[int] = None
+    current_semester: Optional[int] = None
+    cgpa: Optional[float] = None
+
+
+class TeacherUpdate(UserUpdate):
+    employee_code: Optional[str] = None
+    department_id: Optional[int] = None
+    designation: Optional[str] = None

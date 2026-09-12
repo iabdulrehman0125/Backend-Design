@@ -8,7 +8,7 @@ from app.models import User, Student, Teacher, Course, Department, TeacherCourse
 from app.schemas import (
     StudentCreate, TeacherCreate, CourseCreate,
     UserDetail, CourseOut, DepartmentOut,
-    AssignTeacherRequest,
+    AssignTeacherRequest,StudentUpdate, TeacherUpdate,
 )
 from app.security import hash_password
 
@@ -145,3 +145,109 @@ def assign_teacher(payload: AssignTeacherRequest, db: Session = Depends(get_db))
     db.add(TeacherCourse(teacher_id=payload.teacher_id, course_id=payload.course_id))
     db.commit()
     return {"message": "Teacher assigned successfully"}
+
+# ---------- GET ONE USER ----------
+
+@router.get("/users/{user_id}", response_model=UserDetail)
+def get_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    return user
+
+
+# ---------- UPDATE STUDENT ----------
+
+@router.put("/students/{user_id}", response_model=UserDetail)
+def update_student(user_id: int, payload: StudentUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id, User.role == "student").first()
+    if not user:
+        raise HTTPException(404, "Student not found")
+
+    # Update base user fields
+    if payload.full_name is not None:
+        user.full_name = payload.full_name
+    if payload.phone is not None:
+        user.phone = payload.phone
+    if payload.is_active is not None:
+        user.is_active = payload.is_active
+    if payload.password:
+        user.password_hash = hash_password(payload.password)
+
+    # Update student-specific fields
+    student = db.query(Student).filter(Student.user_id == user_id).first()
+    if student:
+        if payload.roll_number is not None:
+            # Check uniqueness
+            existing = db.query(Student).filter(
+                Student.roll_number == payload.roll_number,
+                Student.id != student.id,
+            ).first()
+            if existing:
+                raise HTTPException(400, "Roll number already in use")
+            student.roll_number = payload.roll_number
+        if payload.department_id is not None:
+            student.department_id = payload.department_id
+        if payload.batch_year is not None:
+            student.batch_year = payload.batch_year
+        if payload.current_semester is not None:
+            student.current_semester = payload.current_semester
+        if payload.cgpa is not None:
+            student.cgpa = payload.cgpa
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+# ---------- UPDATE TEACHER ----------
+
+@router.put("/teachers/{user_id}", response_model=UserDetail)
+def update_teacher(user_id: int, payload: TeacherUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id, User.role == "teacher").first()
+    if not user:
+        raise HTTPException(404, "Teacher not found")
+
+    if payload.full_name is not None:
+        user.full_name = payload.full_name
+    if payload.phone is not None:
+        user.phone = payload.phone
+    if payload.is_active is not None:
+        user.is_active = payload.is_active
+    if payload.password:
+        user.password_hash = hash_password(payload.password)
+
+    teacher = db.query(Teacher).filter(Teacher.user_id == user_id).first()
+    if teacher:
+        if payload.employee_code is not None:
+            existing = db.query(Teacher).filter(
+                Teacher.employee_code == payload.employee_code,
+                Teacher.id != teacher.id,
+            ).first()
+            if existing:
+                raise HTTPException(400, "Employee code already in use")
+            teacher.employee_code = payload.employee_code
+        if payload.department_id is not None:
+            teacher.department_id = payload.department_id
+        if payload.designation is not None:
+            teacher.designation = payload.designation
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+# ---------- DELETE USER (student or teacher) ----------
+
+@router.delete("/users/{user_id}", status_code=200)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    if user.role == "admin":
+        raise HTTPException(403, "Cannot delete admin accounts")
+
+    # CASCADE will remove student/teacher/enrollments
+    db.delete(user)
+    db.commit()
+    return {"message": f"User {user.email} deleted"}
