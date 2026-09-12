@@ -6,9 +6,13 @@ from typing import List, Optional
 
 from app.database import get_db
 from app.deps import require_roles
-from app.models import (
-    User, Teacher, Student, Course, TeacherCourse, Enrollment,
-    Timetable, AttendanceSession, AttendanceRecord, Department,
+from app.schemas import (
+    TeacherCourseOut,
+    StudentInCourseOut,
+    AttendanceSessionCreate,
+    AttendanceMarkBulk,
+    TimetableOut,
+    UserOut,
 )
 from app.schemas import (
     TeacherDashboardOut, TeacherCourseOut, StudentInCourseOut,
