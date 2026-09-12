@@ -140,3 +140,56 @@ class TeacherUpdate(UserUpdate):
     employee_code: Optional[str] = None
     department_id: Optional[int] = None
     designation: Optional[str] = None
+    
+# ============ TEACHER SCHEMAS ============
+
+class StudentInCourseOut(BaseModel):
+    student_id: int
+    user_id: int
+    full_name: str
+    email: EmailStr
+    roll_number: str
+    batch_year: int
+    attendance_percentage: float
+    total_sessions: int
+    present_count: int
+
+
+class TeacherCourseOut(BaseModel):
+    id: int
+    code: str
+    title: str
+    description: Optional[str] = None
+    credits: int
+    semester: Optional[int] = None
+    department: Optional[str] = None
+    enrolled_students: int
+    sessions_held: int
+
+
+class AttendanceSessionCreate(BaseModel):
+    course_id: int
+    session_date: date
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    topic: Optional[str] = None
+    timetable_id: Optional[int] = None
+
+
+class AttendanceItem(BaseModel):
+    student_id: int
+    status: str = Field(..., pattern="^(present|absent|late|excused)$")
+
+
+class AttendanceMarkBulk(BaseModel):
+    records: List[AttendanceItem]
+
+
+class TimetableOut(BaseModel):
+    id: int
+    course_code: str
+    course_title: str
+    day_of_week: str
+    start_time: str
+    end_time: str
+    room: Optional[str] = None

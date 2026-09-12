@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.database import Base, engine
-from app.routers import auth, admin
+from app.routers import auth, admin, teacher
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
@@ -24,7 +24,7 @@ app.add_middleware(
 # ---- Routers (include BEFORE any catch-all routes) ----
 app.include_router(auth.router)
 app.include_router(admin.router)
-
+app.include_router(teacher.router) 
 
 # ---- Root health check ----
 @app.get("/")
