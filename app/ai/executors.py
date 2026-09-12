@@ -123,17 +123,43 @@ def exec_get_course_students(db: Session, current_user: User, args: dict) -> dic
         return {"error": "You are not assigned to this course"}
 
     enrollments = db.query(Enrollment).filter(
-        Enrollment.course_id == course.id, Enrollment.status == "active"
+        Enrollment.course_id == course.id,
+        Enrollment.status == "active"
     ).all()
 
     students = []
+
     for e in enrollments:
         s = db.query(Student).filter(Student.id == e.student_id).first()
         u = db.query(User).filter(User.id == s.user_id).first()
+
+        sessions = db.query(AttendanceSession.id).filter(
+            AttendanceSession.course_id == course.id
+        ).subquery()
+
+        total = db.query(func.count(AttendanceRecord.id)).filter(
+            AttendanceRecord.student_id == s.id,
+            AttendanceRecord.session_id.in_(sessions),
+        ).scalar()
+
+        present = db.query(func.count(AttendanceRecord.id)).filter(
+            AttendanceRecord.student_id == s.id,
+            AttendanceRecord.session_id.in_(sessions),
+            AttendanceRecord.status == "present",
+        ).scalar()
+
+        attendance_percentage = (
+            round((present / total) * 100, 1)
+            if total
+            else 0.0
+        )
+
         students.append({
             "roll_number": s.roll_number,
             "full_name": u.full_name,
+            "attendance_percentage": attendance_percentage,
         })
+
     return {"students": students, "count": len(students)}
 
 
