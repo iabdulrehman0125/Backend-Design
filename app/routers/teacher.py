@@ -14,11 +14,6 @@ from app.schemas import (
     TimetableOut,
     UserOut,
 )
-from app.schemas import (
-    TeacherDashboardOut, TeacherCourseOut, StudentInCourseOut,
-    AttendanceSessionCreate, AttendanceMarkBulk, AttendanceSessionOut,
-    TimetableOut, UserOut,
-)
 
 router = APIRouter(
     prefix="/api/teacher",
