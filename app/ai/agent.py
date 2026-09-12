@@ -20,7 +20,7 @@ client = OpenAI(
     base_url="https://api.groq.com/openai/v1",   # ← point to Groq instead of xAI
 )
 
-MODEL = "llama-3.3-70b-versatile"                # ← Groq's best free model with tool calling
+MODEL = "openai/gpt-oss-20b"            # ← Groq's best free model with tool calling
 
 # Role → tools mapping
 ROLE_TOOLS = {
