@@ -16,11 +16,11 @@ from app.ai.executors import (
 )
 
 client = OpenAI(
-    api_key=os.environ.get("XAI_API_KEY", ""),
-    base_url="https://api.x.ai/v1",
+    api_key=os.environ.get("XAI_API_KEY", ""),   # ← keeps your existing Vercel var
+    base_url="https://api.groq.com/openai/v1",   # ← point to Groq instead of xAI
 )
 
-MODEL = "grok-4.3"   # or "grok-3", whichever your key supports
+MODEL = "llama-3.3-70b-versatile"                # ← Groq's best free model with tool calling
 
 # Role → tools mapping
 ROLE_TOOLS = {
