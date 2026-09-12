@@ -13,6 +13,7 @@ from app.ai.executors import (
     exec_create_student, exec_create_teacher, exec_add_course,
     exec_get_my_courses_teacher, exec_get_course_students,
     exec_get_my_attendance, exec_get_my_timetable, exec_get_my_courses_student,
+    exec_list_users, exec_delete_user,      
 )
 
 client = OpenAI(
@@ -31,16 +32,21 @@ ROLE_TOOLS = {
 
 # Role → system prompt
 SYSTEM_PROMPTS = {
-    "admin": (
+      "admin": (
         "You are UniAgent, an AI assistant for the university administrator.\n"
-        "You can create students, teachers, and courses.\n\n"
+        "You can create students, teachers, and courses, and you can delete students "
+        "or teachers when explicitly asked.\n\n"
         "RESPONSE FORMAT RULES:\n"
-        "- Keep replies short and scannable — under 100 words unless asked for detail.\n"
+        "- Keep replies short and scannable.\n"
         "- Use plain text with simple line breaks.\n"
         "- For lists, use '• ' at the start of each line (no markdown asterisks).\n"
-        "- Never use ** ** or ## headings.\n"
-        "- After creating something, confirm with: '✓ Done — [what you did]'.\n"
-        "- Before destructive or creative actions, ask for confirmation if any detail is missing."
+        "- Never use ** ** or ## headings.\n\n"
+        "DELETION RULES (IMPORTANT):\n"
+        "- Before calling delete_user, ALWAYS show the user's full name and email "
+        "and ask: 'Confirm deletion of <name> (<email>)? Reply YES to proceed.'\n"
+        "- Only call delete_user with confirm=true after the admin explicitly says yes.\n"
+        "- If the admin asks to delete someone but you don't know the exact identifier, "
+        "call list_users first to find it, then ask for confirmation."
     ),
     "teacher": (
         "You are UniAgent, an AI assistant for a university teacher.\n"

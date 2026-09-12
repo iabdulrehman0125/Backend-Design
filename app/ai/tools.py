@@ -59,6 +59,52 @@ ADMIN_TOOLS = [
             },
         },
     },
+        {
+        "type": "function",
+        "function": {
+            "name": "delete_user",
+            "description": (
+                "Delete a student or teacher by their email or roll number. "
+                "Use ONLY after the admin has explicitly confirmed the deletion. "
+                "Never delete an admin account."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string",
+                        "description": "The user's email OR roll number OR employee code",
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Must be true — set by the model only after the admin confirms",
+                    },
+                },
+                "required": ["identifier", "confirm"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_users",
+            "description": (
+                "List students or teachers so the admin can choose who to delete. "
+                "Returns roll numbers, emails, and names."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "role": {
+                        "type": "string",
+                        "enum": ["student", "teacher"],
+                        "description": "Which user group to list",
+                    },
+                },
+                "required": ["role"],
+            },
+        },
+    },
 ]
 
 # =========================================================

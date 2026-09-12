@@ -219,3 +219,96 @@ def exec_get_my_courses_student(db: Session, current_user: User) -> dict:
                 "credits": course.credits,
             })
     return {"courses": courses}
+
+# =========================================================
+# ADMIN EXECUTORS — LIST & DELETE
+# =========================================================
+def exec_list_users(db: Session, args: dict) -> dict:
+    """List students or teachers for the admin to review."""
+    role = args.get("role", "student")
+
+    if role == "student":
+        students = db.query(Student).all()
+        rows = []
+        for s in students:
+            u = db.query(User).filter(User.id == s.user_id).first()
+            if u:
+                rows.append({
+                    "roll_number": s.roll_number,
+                    "full_name": u.full_name,
+                    "email": u.email,
+                })
+        return {
+            "role": "student",
+            "count": len(rows),
+            "users": rows,
+            "hint": "Format each as: • Name (roll) — email",
+        }
+
+    if role == "teacher":
+        teachers = db.query(Teacher).all()
+        rows = []
+        for t in teachers:
+            u = db.query(User).filter(User.id == t.user_id).first()
+            if u:
+                rows.append({
+                    "employee_code": t.employee_code,
+                    "full_name": u.full_name,
+                    "email": u.email,
+                    "designation": t.designation,
+                })
+        return {
+            "role": "teacher",
+            "count": len(rows),
+            "users": rows,
+            "hint": "Format each as: • Name (code) — email · designation",
+        }
+
+    return {"error": f"Unknown role: {role}"}
+
+
+def exec_delete_user(db: Session, args: dict) -> dict:
+    """Delete a student or teacher by email, roll number, or employee code."""
+    identifier = (args.get("identifier") or "").strip()
+    confirm = args.get("confirm")
+
+    if not identifier:
+        return {"error": "No identifier provided"}
+    if not confirm:
+        return {
+            "error": "Deletion not confirmed. Ask the admin to confirm before deleting."
+        }
+
+    # Try email first
+    user = db.query(User).filter(User.email == identifier).first()
+
+    # Try roll number (student)
+    if not user:
+        student = db.query(Student).filter(Student.roll_number == identifier).first()
+        if student:
+            user = db.query(User).filter(User.id == student.user_id).first()
+
+    # Try employee code (teacher)
+    if not user:
+        teacher = db.query(Teacher).filter(Teacher.employee_code == identifier).first()
+        if teacher:
+            user = db.query(User).filter(User.id == teacher.user_id).first()
+
+    if not user:
+        return {"error": f"No user found matching '{identifier}'"}
+
+    if user.role == "admin":
+        return {"error": "Refusing to delete an admin account"}
+
+    # Capture for the response before deletion
+    deleted_name = user.full_name
+    deleted_email = user.email
+    deleted_role = user.role
+
+    db.delete(user)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"Deleted {deleted_role} '{deleted_name}' ({deleted_email})",
+    }
