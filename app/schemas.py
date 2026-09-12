@@ -15,13 +15,13 @@ class TokenResponse(BaseModel):
 
 class UserOut(BaseModel):
     id: int
-    email: EmailStr
-    full_name: str
+    email: Optional[str] = None       # 👈 tolerant on read
+    full_name: Optional[str] = None   # 👈 tolerant on read
     role: str
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
-    is_active: bool
-    created_at: datetime
+    is_active: bool = True
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
